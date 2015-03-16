@@ -96,6 +96,9 @@ hid_profile_create_protocol_descriptor_list(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+	provider_p		provider = (provider_p) data;
+	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
+	
 	
 	SDP_PUT8(SDP_DATA_SEQ8, buf); //2
 	SDP_PUT8(5, buf);
@@ -103,6 +106,8 @@ hid_profile_create_protocol_descriptor_list(
 	SDP_PUT8(3, buf);
 	SDP_PUT8(SDP_DATA_UUID16, buf); //3
 	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
+	SDP_PUT8(SDP_DATA_UINT8, buf);	//
+	SDP_PUT8(&hid->server_channel, buf);
 
 
 	return (7);
