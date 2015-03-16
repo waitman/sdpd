@@ -25,7 +25,7 @@ sp.server_channel = channel;
 	
 memcpy(&bt_addr_any, NG_HCI_BDADDR_ANY, sizeof(bt_addr_any));
 
-sdp_register_service(ss, service, &bt_addr_any, (void *)&sp, sizeof(sp), &sdp_handle);
+sdp_register_service(ss, SDP_SERVICE_CLASS_HUMAN_INTERFACE_DEVICE, &bt_addr_any, (void *)&sp, sizeof(sp), &sdp_handle);
 
 
 
