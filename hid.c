@@ -84,7 +84,7 @@ hid_profile_create_service_name(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-	static char	service_name[] = "Human Interface Device";
+	static char	service_name[] = "HID Device";
 
 	return (common_profile_create_string8(
 			buf, eob,
@@ -216,6 +216,8 @@ static attr_t	hid_profile_attrs[] = {
 	  hid_profile_create_bluetooth_profile_descriptor_list },
 	  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST,
 	  hid_profile_create_protocol_descriptor_list },
+	  { SDP_ATTR_PRIMARY_LANGUAGE_BASE_ID + SDP_ATTR_SERVICE_NAME_OFFSET,
+	  hid_profile_create_service_name },
 	{ SDP_ATTR_SERVICE_ID,
 	  hid_profile_create_service_id },
 	{ SDP_ATTR_BROWSE_GROUP_LIST,
