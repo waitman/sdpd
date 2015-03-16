@@ -1,0 +1,55 @@
+
+
+Add hid profile to sdpd server
+
+!!! in progress. 
+
+
+
+example:
+
+
+struct sigaction	 sa;
+bdaddr_t		 bt_addr_any;
+sdp_sp_profile_t	 sp;
+void			*ss;
+uint32_t		 sdp_handle;
+int			 channel;
+	
+channel = 17;
+
+ss = sdp_open_local(NULL);
+
+memset(&sp, 0, sizeof(sp));
+sp.server_channel = channel;
+	
+memcpy(&bt_addr_any, NG_HCI_BDADDR_ANY, sizeof(bt_addr_any));
+
+sdp_register_service(ss, service, &bt_addr_any, (void *)&sp, sizeof(sp), &sdp_handle);
+
+
+
+
+
+# sdpcontrol -l browse
+
+Record Handle: 00000000
+Service Class ID List:
+        Service Discovery Server (0x1000)
+Protocol Descriptor List:
+        L2CAP (0x0100)
+        SDP (0x0001)
+Bluetooth Profile Descriptor List:
+        Service Discovery Server (0x1000) ver. 1.0
+
+Record Handle: 0x00000001
+Service Class ID List:
+        Browse Group Descriptor (0x1001)
+
+Record Handle: 0x00000002
+Service Class ID List:
+        Human Interface Device (0x1124)
+Bluetooth Profile Descriptor List:
+        Human Interface Device (0x1124) ver. 1.0
+
+
