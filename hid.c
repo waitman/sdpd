@@ -46,6 +46,8 @@ typedef struct sdp_hid_profile        sdp_hid_profile_t;
 typedef struct sdp_hid_profile *      sdp_hid_profile_p;
 
 
+
+
 static int32_t
 hid_profile_create_service_class_id_list(
 		uint8_t *buf, uint8_t const * const eob,
@@ -94,12 +96,16 @@ hid_profile_create_protocol_descriptor_list(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-	provider_p		provider = (provider_p) data;
-	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
+	
+	SDP_PUT8(SDP_DATA_SEQ8, buf); //2
+	SDP_PUT8(5, buf);
+	SDP_PUT8(SDP_DATA_SEQ8, buf); //2
+	SDP_PUT8(3, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); //3
+	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
 
-	return (obex_profile_create_protocol_descriptor_list(
-			buf, eob,
-			(uint8_t const *) &hid->server_channel, 1)); 
+
+	return (7);
 }
 
 
@@ -203,6 +209,8 @@ static attr_t	hid_profile_attrs[] = {
 	  hid_profile_create_service_class_id_list },
 	{ SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,
 	  hid_profile_create_bluetooth_profile_descriptor_list },
+	  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST,
+	  hid_profile_create_protocol_descriptor_list },
 	{ SDP_ATTR_SERVICE_ID,
 	  hid_profile_create_service_id },
 	{ SDP_ATTR_BROWSE_GROUP_LIST,
