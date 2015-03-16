@@ -35,6 +35,17 @@
 #include "profile.h"
 #include "provider.h"
 
+
+struct sdp_hid_profile
+{
+        uint8_t server_channel;
+        uint8_t supported_formats_size;
+        uint8_t supported_formats[30];
+};
+typedef struct sdp_hid_profile        sdp_hid_profile_t;
+typedef struct sdp_hid_profile *      sdp_hid_profile_p;
+
+
 static int32_t
 hid_profile_create_service_class_id_list(
 		uint8_t *buf, uint8_t const * const eob,
@@ -84,11 +95,11 @@ hid_profile_create_protocol_descriptor_list(
 		uint8_t const *data, uint32_t datalen)
 {
 	provider_p		provider = (provider_p) data;
-	sdp_opush_profile_p	opush = (sdp_opush_profile_p) provider->data;
+	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
 
 	return (hid_profile_create_protocol_descriptor_list(
 			buf, eob,
-			(uint8_t const *) &opush->server_channel, 1)); 
+			(uint8_t const *) &hid->server_channel, 1)); 
 }
 
 
@@ -182,6 +193,7 @@ hid_profile_create_service_database_state(
 
 	return (5);
 }
+
 
 
 static attr_t	hid_profile_attrs[] = {
