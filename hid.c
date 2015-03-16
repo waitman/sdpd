@@ -205,7 +205,13 @@ hid_profile_create_service_database_state(
 	return (5);
 }
 
-
+int32_t
+hid_profile_data_valid(uint8_t const *data, uint32_t datalen)
+{
+	//sdp_hid_profile_p	hid = (sdp_hid_profile_p) data;
+	/* validate data here*/
+	return (1);
+}
 
 static attr_t	hid_profile_attrs[] = {
 	{ SDP_ATTR_SERVICE_RECORD_HANDLE,
@@ -229,8 +235,8 @@ static attr_t	hid_profile_attrs[] = {
 
 profile_t	hid_profile_descriptor = {
 	SDP_SERVICE_CLASS_HUMAN_INTERFACE_DEVICE,
-	sizeof(sdp_opush_profile_t),
-	obex_profile_data_valid, /* needs work */
+	sizeof(sdp_hid_profile_t),
+	hid_profile_data_valid,
 	(attr_t const * const) &hid_profile_attrs
 };
 
