@@ -97,7 +97,7 @@ hid_profile_create_protocol_descriptor_list(
 	provider_p		provider = (provider_p) data;
 	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
 
-	return (hid_profile_create_protocol_descriptor_list(
+	return (obex_profile_create_protocol_descriptor_list(
 			buf, eob,
 			(uint8_t const *) &hid->server_channel, 1)); 
 }
