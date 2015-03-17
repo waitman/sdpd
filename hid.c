@@ -47,7 +47,6 @@ typedef struct sdp_hid_profile *      sdp_hid_profile_p;
 
 
 
-
 static int32_t
 hid_profile_create_service_class_id_list(
 		uint8_t *buf, uint8_t const * const eob,
@@ -91,6 +90,27 @@ hid_profile_create_service_name(
 			(uint8_t const *) service_name, strlen(service_name)));
 }
 
+
+/*
+0x0004 ProtocolDescriptorList:  DATSEQ {
+  DATSEQ {
+    UUID 0000010000001000800000805f9b34fb (L2CAP)
+    U_INT_2 0x1001
+  }
+}
+*/
+
+
+/*
+ * seq8 len8			- 2 bytes
+ *	seq8 len8		- 2 bytes
+ *		uuid16 value16	- 3 bytes
+ *		uint16 value16	- 3 bytes
+ *	seq8 len8		- 2 bytes
+ *		uuid16 value16	- 3 bytes
+ */
+
+
 static int32_t
 hid_profile_create_protocol_descriptor_list(
 		uint8_t *buf, uint8_t const * const eob,
@@ -100,17 +120,58 @@ hid_profile_create_protocol_descriptor_list(
 	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
 	
 	
-	SDP_PUT8(SDP_DATA_SEQ8, buf); //2
-	SDP_PUT8(5, buf);
-	SDP_PUT8(SDP_DATA_SEQ8, buf); //2
-	SDP_PUT8(3, buf);
-	SDP_PUT8(SDP_DATA_UUID16, buf); //3
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(13, buf);
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(6, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
 	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
-	SDP_PUT8(SDP_DATA_UINT8, buf);	//
-	SDP_PUT8(&hid->server_channel, buf);
+	SDP_PUT8(SDP_DATA_UINT16, buf);		//3
+	SDP_PUT16(*(uint16_t const *)&hid->server_channel, buf); 	/* PSM */
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(3, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
+	SDP_PUT16(SDP_UUID_PROTOCOL_HIDP, buf); 
+
+	return (15);
+}
+
+/*
+ * seq8 len8				- 2 bytes
+ * 	seq8 len8			- 2 bytes
+ *		seq8 len8		- 2 bytes
+ *			uuid16 value16	- 3 bytes
+ *			uint16 value16	- 3 bytes
+ *		seq8 len8		- 2 bytes
+ *			uuid16 value16	- 3 bytes
+ */
+
+static int32_t
+hid_profile_create_additional_protocol_descriptor_list(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+	provider_p		provider = (provider_p) data;
+	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
+	uint16_t intrchan = *(uint16_t const *)&hid->server_channel+2;
+	
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(15, buf);
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(11, buf);
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(6, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
+	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
+	SDP_PUT8(SDP_DATA_UINT16, buf);		//3
+	SDP_PUT16(intrchan, buf); 	/* PSM */
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(3, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
+	SDP_PUT16(SDP_UUID_PROTOCOL_HIDP, buf); 
 
 
-	return (7);
+	return (17);
 }
 
 
@@ -213,23 +274,151 @@ hid_profile_data_valid(uint8_t const *data, uint32_t datalen)
 	return (1);
 }
 
+/* the USB HID version supported, 1.11 */
+
+static int32_t
+hid_profile_usb_hid_version(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT16, buf);	//3
+    SDP_PUT16(0x0111, buf);
+    return (3);
+}
+
+static int32_t
+hid_profile_keyboard(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+    SDP_PUT8(0x0001, buf);
+    return (2);
+}
+
+static int32_t
+hid_profile_country(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+    SDP_PUT8(0x0000, buf);
+    return (2);
+}
+
+static int32_t
+hid_profile_virtual_cable(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+    SDP_PUT8(0x0, buf);
+    return (2);
+}
+
+
+static int32_t
+hid_profile_reconnect_auto(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+    SDP_PUT8(0x0, buf);
+    return (2);
+}
+
+static int32_t
+hid_profile_boot_device(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+    SDP_PUT8(0x0, buf);
+    return (2);
+}
+
+/*
+ 
+1) Service Class ID List 0x0001
+2) Protocol Descriptor List  0x0004
+3) LanguageBaseAttributeIDL 0x0006
+4) AdditionalProtocolDescriptorList 0x000d
+5) BluetoothProfile DescriptorList  0x0009
+6) HIDParserVersion 0x0201
+7) HIDDeviceSubclass 0x0202
+8) HIDCountryCode 0x0203
+9) HIDVirtualCable 0x0204
+10) HIDReconnectInitiate 0x0205
+11) HIDDescriptorList 0x0206
+12) HIDLANGIDBaseList 0x0207
+13) HIDBootDevice 0x020e
+
+SDP_BEGIN_RECORD()
+	SDP_ROOT_ATTRIBUTE_UINT(32, SDP_ATTRIB_RECORD_HANDLE, 0x10000)  		(1) common_profile_create_service_record_handle
+	SDP_START_LIST(SDP_ATTRIB_CLASS_ID_LIST) 					(2) hid_profile_create_service_class_id_list
+		SDP_DEFINE_NODE_UUID(16, HumanInterfaceDeviceServiceClassID_UUID16)	 
+	SDP_END_LIST()
+	SDP_START_LIST(SDP_ATTRIB_PROTOCOL_DESCRIPTOR_LIST)
+		SDP_START_LIST(NULL)
+			SDP_DEFINE_NODE_UUID(16, L2CAP_PROTOCOL_UUID16)
+			SDP_DEFINE_NODE_UINT(16, m_Psm)
+		SDP_END_LIST()
+		SDP_START_LIST(NULL)
+			SDP_DEFINE_NODE_UUID(16, HID_PROTOCOL_UUID16)
+			//SDP_DEFINE_NODE_UUID(16, 0x13)
+		SDP_END_LIST()
+	SDP_END_LIST()
+SDP_END_RECORD()
+
+Attribute 0x0004 - ProtocolDescriptorList
+		Sequence
+			Sequence
+				UUID16 0x0100 - L2CAP
+				UINT16 0x0011
+			Sequence
+				UUID16 0x0011 - HIDP
+	Attribute 0x0006 - LanguageBaseAttributeIDList
+		Sequence
+			UINT16 0x656e
+			UINT16 0x006a
+			UINT16 0x0100
+	Attribute 0x0009 - BluetoothProfileDescriptorList
+		Sequence
+			Sequence
+				UUID16 0x1124 - HumanInterfaceDeviceService (HID)
+				UINT16 0x0100
+	Attribute 0x000d - AdditionalProtocolDescriptorLists
+		Sequence
+			Sequence
+				Sequence
+					UUID16 0x0100 - L2CAP
+					UINT16 0x0013
+				Sequence
+					UUID16 0x0011 - HIDP
+					
+					
+*/
+
 static attr_t	hid_profile_attrs[] = {
-	{ SDP_ATTR_SERVICE_RECORD_HANDLE,
-	  common_profile_create_service_record_handle },
-	{ SDP_ATTR_SERVICE_CLASS_ID_LIST,
-	  hid_profile_create_service_class_id_list },
-	{ SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,
-	  hid_profile_create_bluetooth_profile_descriptor_list },
-	  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST,
-	  hid_profile_create_protocol_descriptor_list },
-	  { SDP_ATTR_PRIMARY_LANGUAGE_BASE_ID + SDP_ATTR_SERVICE_NAME_OFFSET,
+  { SDP_ATTR_SERVICE_RECORD_HANDLE, 			common_profile_create_service_record_handle }, 
+  { SDP_ATTR_SERVICE_CLASS_ID_LIST, 			hid_profile_create_service_class_id_list },			/* 1 */
+  { SDP_ATTR_PRIMARY_LANGUAGE_BASE_ID + SDP_ATTR_SERVICE_NAME_OFFSET,
 	  hid_profile_create_service_name },
-	{ SDP_ATTR_SERVICE_ID,
-	  hid_profile_create_service_id },
-	{ SDP_ATTR_BROWSE_GROUP_LIST,
-	  hid_profile_create_browse_group_list },
-	{ SDP_ATTR_VERSION_NUMBER_LIST,
-	  hid_profile_create_version_number_list },
+  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST, 			hid_profile_create_protocol_descriptor_list },			/* 2 */
+  { SDP_ATTR_LANGUAGE_BASE_ATTRIBUTE_ID_LIST, 		common_profile_create_language_base_attribute_id_list },	/* 3 */
+  { SDP_ATTR_ADDITIONAL_PROTOCOL_DESCRIPTOR_LISTS,	hid_profile_create_additional_protocol_descriptor_list },	/* 4 */
+  { SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,		hid_profile_create_bluetooth_profile_descriptor_list },		/* 5 */
+  { 0x0201,						hid_profile_usb_hid_version }, 					/* 6 - usb hid version */
+  { 0x0202, 						hid_profile_keyboard }, 					/* 7 - keyboard */
+  { 0x0203, 						hid_profile_country }, 						/* 8 - country - not localized */
+  { 0x0204, 						hid_profile_virtual_cable }, 					/* 9 - virtual cable - false  */
+  { 0x0205, 						hid_profile_reconnect_auto }, 					/* 10 - reconnect initiate - false */
+/* 11 0x0206 hmmm */
+/* 12 0x0207 hmmm */
+  { 0x020e, 						hid_profile_boot_device }, 					/* 13 - boot device - false */
+
+
+
 	{ 0, NULL } /* end entry */
 };
 
