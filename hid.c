@@ -352,50 +352,6 @@ hid_profile_boot_device(
 11) HIDDescriptorList 0x0206
 12) HIDLANGIDBaseList 0x0207
 13) HIDBootDevice 0x020e
-
-SDP_BEGIN_RECORD()
-	SDP_ROOT_ATTRIBUTE_UINT(32, SDP_ATTRIB_RECORD_HANDLE, 0x10000)  		(1) common_profile_create_service_record_handle
-	SDP_START_LIST(SDP_ATTRIB_CLASS_ID_LIST) 					(2) hid_profile_create_service_class_id_list
-		SDP_DEFINE_NODE_UUID(16, HumanInterfaceDeviceServiceClassID_UUID16)	 
-	SDP_END_LIST()
-	SDP_START_LIST(SDP_ATTRIB_PROTOCOL_DESCRIPTOR_LIST)
-		SDP_START_LIST(NULL)
-			SDP_DEFINE_NODE_UUID(16, L2CAP_PROTOCOL_UUID16)
-			SDP_DEFINE_NODE_UINT(16, m_Psm)
-		SDP_END_LIST()
-		SDP_START_LIST(NULL)
-			SDP_DEFINE_NODE_UUID(16, HID_PROTOCOL_UUID16)
-			//SDP_DEFINE_NODE_UUID(16, 0x13)
-		SDP_END_LIST()
-	SDP_END_LIST()
-SDP_END_RECORD()
-
-Attribute 0x0004 - ProtocolDescriptorList
-		Sequence
-			Sequence
-				UUID16 0x0100 - L2CAP
-				UINT16 0x0011
-			Sequence
-				UUID16 0x0011 - HIDP
-	Attribute 0x0006 - LanguageBaseAttributeIDList
-		Sequence
-			UINT16 0x656e
-			UINT16 0x006a
-			UINT16 0x0100
-	Attribute 0x0009 - BluetoothProfileDescriptorList
-		Sequence
-			Sequence
-				UUID16 0x1124 - HumanInterfaceDeviceService (HID)
-				UINT16 0x0100
-	Attribute 0x000d - AdditionalProtocolDescriptorLists
-		Sequence
-			Sequence
-				Sequence
-					UUID16 0x0100 - L2CAP
-					UINT16 0x0013
-				Sequence
-					UUID16 0x0011 - HIDP
-					
 					
 */
 
