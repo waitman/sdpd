@@ -431,6 +431,17 @@ hid_langid(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+  /*  from ml post by Iain Hibbert
+   * seq
+      seq
+	uint16    0x0409
+	uint16    0x0100
+
+	where 0x0409 translates as "English (US)" and 0x0100 is the offset of the
+	default language attributes, from LanguageBaseAttributeIDList
+    */
+
   SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
   SDP_PUT8(8, buf);
   SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
