@@ -35,6 +35,20 @@
 #include "profile.h"
 #include "provider.h"
 
+#define SDP_DATA_BOOL8		0x28
+#define SDP_DATA_FALSE		0x0
+#define SDP_DATA_TRUE		0x1
+#define SDP_NO_LOCAL 		0x0000
+#define SDP_IMA_KEYBOARD	0x0001
+#define USB_HID_VERSION		0x0111
+#define SDP_ATTR_USB_HID_VERSION	0x0201
+#define SDP_ATTR_HID_DEVICE_SUBCLASS	0x0202
+#define SDP_ATTR_PROFILE_COUNTRY	0x0203
+#define SDP_ATTR_HID_VIRTUAL_CABLE	0x0204
+#define SDP_ATTR_AUTO_RECONNECT		0x0205
+#define SDP_ATTR_HID_DESCRIPTOR		0x0206
+#define SDP_ATTR_LANG_ID		0x0207
+#define SDP_ATTR_BOOT_DEVICE		0x020e
 
 struct sdp_hid_profile
 {
@@ -282,7 +296,7 @@ hid_profile_usb_hid_version(
 		uint8_t const *data, uint32_t datalen)
 {
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x0111, buf);
+    SDP_PUT16(USB_HID_VERSION, buf);
     return (3);
 }
 
@@ -292,7 +306,7 @@ hid_profile_keyboard(
 		uint8_t const *data, uint32_t datalen)
 {
     SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(0x0001, buf);
+    SDP_PUT8(SDP_IMA_KEYBOARD, buf);
     return (2);
 }
 
@@ -302,7 +316,7 @@ hid_profile_country(
 		uint8_t const *data, uint32_t datalen)
 {
     SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(0x0000, buf);
+    SDP_PUT8(SDP_NO_LOCAL, buf);
     return (2);
 }
 
@@ -311,8 +325,8 @@ hid_profile_virtual_cable(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(0x0, buf);
+    SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
+    SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
 }
 
@@ -322,8 +336,8 @@ hid_profile_reconnect_auto(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(0x0, buf);
+    SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
+    SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
 }
 
@@ -332,11 +346,11 @@ hid_profile_boot_device(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(0x0, buf);
+    SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
+    SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
 }
-
+//const uin8_t
 static const uint8_t base_hid_descriptor[] =  {
     0x05, 0x01, 0x09, 0x06, 0xa1, 0x01, 0x85, 0x01,
     0x05, 0x07, 0x19, 0xe0, 0x29, 0xe7, 0x15, 0x00,
@@ -358,14 +372,18 @@ hid_descriptor(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-  int x=0;
-  for (int i=0;i<sizeof(base_hid_descriptor);i++)
-  {
-    SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-    SDP_PUT8(base_hid_descriptor[i], buf);
-    x+=2;
-  }
-    return (x);
+    
+  SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+  SDP_PUT8(105, buf);
+  SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+  SDP_PUT8(103, buf);
+  SDP_PUT8(SDP_DATA_UINT8, buf);	//2
+  SDP_PUT8(0x22, buf);
+  SDP_PUT8(SDP_DATA_STR8, buf);
+  SDP_PUT8(sizeof(base_hid_descriptor), buf);
+  memcpy(buf, base_hid_descriptor, sizeof(base_hid_descriptor));
+  return (107); //should be
+
 }
 
 static int32_t
@@ -373,13 +391,15 @@ hid_langid(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-  SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-  SDP_PUT8(0x656e, buf);
-  SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-  SDP_PUT8(0x6a, buf);
-  SDP_PUT8(SDP_DATA_UINT8, buf);	//2
-  SDP_PUT8(0x100, buf);
-  return(6);
+  SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+  SDP_PUT8(8, buf);
+  SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+  SDP_PUT8(6, buf);
+  SDP_PUT8(SDP_DATA_UINT16, buf);	//3
+  SDP_PUT16(0x0409, buf);
+  SDP_PUT8(SDP_DATA_UINT16, buf);	//3
+  SDP_PUT16(0x0100, buf);
+  return(12);
 }
 
 /*
@@ -410,14 +430,14 @@ static attr_t	hid_profile_attrs[] = {
   { SDP_ATTR_LANGUAGE_BASE_ATTRIBUTE_ID_LIST, 		common_profile_create_language_base_attribute_id_list },	/* 3 */
   { SDP_ATTR_ADDITIONAL_PROTOCOL_DESCRIPTOR_LISTS,	hid_profile_create_additional_protocol_descriptor_list },	/* 4 */
   { SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,		hid_profile_create_bluetooth_profile_descriptor_list },		/* 5 */
-  { 0x0201,						hid_profile_usb_hid_version }, 					/* 6 - usb hid version */
-  { 0x0202, 						hid_profile_keyboard }, 					/* 7 - keyboard */
-  { 0x0203, 						hid_profile_country }, 						/* 8 - country - not localized */
-  { 0x0204, 						hid_profile_virtual_cable }, 					/* 9 - virtual cable - false  */
-  { 0x0205, 						hid_profile_reconnect_auto }, 					/* 10 - reconnect initiate - false */
-  { 0x0206, 						hid_descriptor },						/* 11 - hid descriptor */
-  { 0x0207,						hid_langid },							/* 12 - hid langid base list */
-  { 0x020e, 						hid_profile_boot_device }, 					/* 13 - boot device - false */
+  { SDP_ATTR_USB_HID_VERSION,				hid_profile_usb_hid_version }, 					/* 6 - usb hid version */
+  { SDP_ATTR_HID_DEVICE_SUBCLASS, 			hid_profile_keyboard }, 					/* 7 - keyboard */
+  { SDP_ATTR_PROFILE_COUNTRY, 				hid_profile_country }, 						/* 8 - country - not localized */
+  { SDP_ATTR_HID_VIRTUAL_CABLE, 			hid_profile_virtual_cable }, 					/* 9 - virtual cable - false  */
+  { SDP_ATTR_AUTO_RECONNECT, 				hid_profile_reconnect_auto }, 					/* 10 - reconnect initiate - false */
+  { SDP_ATTR_HID_DESCRIPTOR, 				hid_descriptor },						/* 11 - hid descriptor */
+  { SDP_ATTR_LANG_ID,					hid_langid },							/* 12 - hid langid base list */
+  { SDP_ATTR_BOOT_DEVICE, 				hid_profile_boot_device }, 					/* 13 - boot device - false */
 
 
 
