@@ -35,12 +35,17 @@
 #include "profile.h"
 #include "provider.h"
 
-#define SDP_DATA_BOOL8		0x28
-#define SDP_DATA_FALSE		0x0
-#define SDP_DATA_TRUE		0x1
-#define SDP_NO_LOCAL 		0x0000
-#define SDP_IMA_KEYBOARD	0x0001
-#define USB_HID_VERSION		0x0111
+/* 
+ * defines not found in sdp.h at the moment
+ * 
+ */
+
+#define SDP_DATA_BOOL8			0x28
+#define SDP_DATA_FALSE			0x0
+#define SDP_DATA_TRUE			0x1
+#define SDP_NO_LOCAL 			0x0000
+#define SDP_IMA_KEYBOARD		0x0001
+#define USB_HID_VERSION			0x0111
 #define SDP_ATTR_USB_HID_VERSION	0x0201
 #define SDP_ATTR_HID_DEVICE_SUBCLASS	0x0202
 #define SDP_ATTR_PROFILE_COUNTRY	0x0203
@@ -104,17 +109,6 @@ hid_profile_create_service_name(
 			(uint8_t const *) service_name, strlen(service_name)));
 }
 
-
-/*
-0x0004 ProtocolDescriptorList:  DATSEQ {
-  DATSEQ {
-    UUID 0000010000001000800000805f9b34fb (L2CAP)
-    U_INT_2 0x1001
-  }
-}
-*/
-
-
 /*
  * seq8 len8			- 2 bytes
  *	seq8 len8		- 2 bytes
@@ -133,6 +127,14 @@ hid_profile_create_protocol_descriptor_list(
 	provider_p		provider = (provider_p) data;
 	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
 	
+
+      /*
+       * Create a protocol descriptor list. 
+       * HID profile uses L2CAP with a control channel and interrupt channel. 
+       * Control channel is set by calling function. 
+       * Here we assume that interrupt channel is control channel + 2
+       * TODO: maybe set interrupt channel in calling function
+       */
 	
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
 	SDP_PUT8(13, buf);
@@ -160,6 +162,7 @@ hid_profile_create_protocol_descriptor_list(
  *			uuid16 value16	- 3 bytes
  */
 
+
 static int32_t
 hid_profile_create_additional_protocol_descriptor_list(
 		uint8_t *buf, uint8_t const * const eob,
@@ -168,6 +171,12 @@ hid_profile_create_additional_protocol_descriptor_list(
 	provider_p		provider = (provider_p) data;
 	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
 	uint16_t intrchan = *(uint16_t const *)&hid->server_channel+2;
+
+
+      /*
+      * the L2CAP interrupt channel goes in the the 
+      * 'additional profile descriptor list'
+      */
 	
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
 	SDP_PUT8(15, buf);
@@ -285,16 +294,20 @@ hid_profile_data_valid(uint8_t const *data, uint32_t datalen)
 {
 	//sdp_hid_profile_p	hid = (sdp_hid_profile_p) data;
 	/* validate data here*/
+	/* TODO: validate the data, for now just return 'OK' */
 	return (1);
 }
 
-/* the USB HID version supported, 1.11 */
+
 
 static int32_t
 hid_profile_usb_hid_version(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+    /* the USB HID version supported, 1.11 */
+    
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
     SDP_PUT16(USB_HID_VERSION, buf);
     return (3);
@@ -305,6 +318,9 @@ hid_profile_keyboard(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+    
+    /* Announce that I'm a keyboard */
+    
     SDP_PUT8(SDP_DATA_UINT8, buf);	//2
     SDP_PUT8(SDP_IMA_KEYBOARD, buf);
     return (2);
@@ -315,6 +331,9 @@ hid_profile_country(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+    /* Set country / localization. Here it is not localized */
+    
     SDP_PUT8(SDP_DATA_UINT8, buf);	//2
     SDP_PUT8(SDP_NO_LOCAL, buf);
     return (2);
@@ -325,6 +344,9 @@ hid_profile_virtual_cable(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+    /* Virtual cable is set to false. Read the BT HID spec */
+    
     SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
     SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
@@ -336,6 +358,9 @@ hid_profile_reconnect_auto(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+
+    /* Auto Reconnect set to false. Read the BT HID spec. */
+    
     SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
     SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
@@ -346,11 +371,22 @@ hid_profile_boot_device(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+    /* Boot Device set to false, Read the BT HID spec. */
+    
     SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
     SDP_PUT8(SDP_DATA_FALSE, buf);
     return (2);
 }
-//const uin8_t
+
+  /* For now, this is the descriptor code advertised 
+   *  by an Apple keyboard, provided by a scan 
+   *  from Iain Hibbert (see ml post)
+   *  TODO: review and update. This descriptor 
+   *  references LEDs, etc. things that may not
+   *  actually exist in this system.
+   */
+  
 static const uint8_t base_hid_descriptor[] =  {
     0x05, 0x01, 0x09, 0x06, 0xa1, 0x01, 0x85, 0x01,
     0x05, 0x07, 0x19, 0xe0, 0x29, 0xe7, 0x15, 0x00,
@@ -372,6 +408,10 @@ hid_descriptor(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+  
+    /* set the HID descriptor. seq, seq, 
+     * and string of data 
+     above */
     
   SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
   SDP_PUT8(105, buf);
@@ -404,6 +444,10 @@ hid_langid(
 
 /*
  
+ list of essential mandatory attributes
+ provided by Maksim Yevmenkin (see ml)
+ read BT HID spec...
+ 
 1) Service Class ID List 0x0001
 2) Protocol Descriptor List  0x0004
 3) LanguageBaseAttributeIDL 0x0006
@@ -423,13 +467,13 @@ hid_langid(
 
 static attr_t	hid_profile_attrs[] = {
   { SDP_ATTR_SERVICE_RECORD_HANDLE, 			common_profile_create_service_record_handle }, 
-  { SDP_ATTR_SERVICE_CLASS_ID_LIST, 			hid_profile_create_service_class_id_list },			/* 1 */
-  { SDP_ATTR_PRIMARY_LANGUAGE_BASE_ID + SDP_ATTR_SERVICE_NAME_OFFSET,
+  { SDP_ATTR_SERVICE_CLASS_ID_LIST, 			hid_profile_create_service_class_id_list },			/* 1 set service class id */
+  { SDP_ATTR_PRIMARY_LANGUAGE_BASE_ID + SDP_ATTR_SERVICE_NAME_OFFSET,							/* xxx - set service name */
 	  hid_profile_create_service_name },
-  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST, 			hid_profile_create_protocol_descriptor_list },			/* 2 */
-  { SDP_ATTR_LANGUAGE_BASE_ATTRIBUTE_ID_LIST, 		common_profile_create_language_base_attribute_id_list },	/* 3 */
-  { SDP_ATTR_ADDITIONAL_PROTOCOL_DESCRIPTOR_LISTS,	hid_profile_create_additional_protocol_descriptor_list },	/* 4 */
-  { SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,		hid_profile_create_bluetooth_profile_descriptor_list },		/* 5 */
+  { SDP_ATTR_PROTOCOL_DESCRIPTOR_LIST, 			hid_profile_create_protocol_descriptor_list },			/* 2 protocol descriptor list */
+  { SDP_ATTR_LANGUAGE_BASE_ATTRIBUTE_ID_LIST, 		common_profile_create_language_base_attribute_id_list },	/* 3 language base id */
+  { SDP_ATTR_ADDITIONAL_PROTOCOL_DESCRIPTOR_LISTS,	hid_profile_create_additional_protocol_descriptor_list },	/* 4 l2cap interrupt channel */
+  { SDP_ATTR_BLUETOOTH_PROFILE_DESCRIPTOR_LIST,		hid_profile_create_bluetooth_profile_descriptor_list },		/* 5 bt profile descriptor list */
   { SDP_ATTR_USB_HID_VERSION,				hid_profile_usb_hid_version }, 					/* 6 - usb hid version */
   { SDP_ATTR_HID_DEVICE_SUBCLASS, 			hid_profile_keyboard }, 					/* 7 - keyboard */
   { SDP_ATTR_PROFILE_COUNTRY, 				hid_profile_country }, 						/* 8 - country - not localized */
