@@ -348,7 +348,7 @@ hid_profile_virtual_cable(
     /* Virtual cable is set to false. Read the BT HID spec */
     
     SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
-    SDP_PUT8(SDP_DATA_FALSE, buf);
+    SDP_PUT8(SDP_DATA_TRUE, buf);
     return (2);
 }
 
@@ -362,7 +362,7 @@ hid_profile_reconnect_auto(
     /* Auto Reconnect set to false. Read the BT HID spec. */
     
     SDP_PUT8(SDP_DATA_BOOL8, buf);	//2
-    SDP_PUT8(SDP_DATA_FALSE, buf);
+    SDP_PUT8(SDP_DATA_TRUE, buf);
     return (2);
 }
 

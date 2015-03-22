@@ -88,10 +88,10 @@ provider_p
 provider_register(profile_p const profile, bdaddr_p const bdaddr, int32_t fd,
 	uint8_t const *data, uint32_t datalen)
 {
-	syslog(LOG_ERR, "get provider");
+	//syslog(LOG_ERR, "get provider");
 	provider_p	provider = calloc(1, sizeof(*provider));
 
-	syslog(LOG_ERR, "have provider");
+	//syslog(LOG_ERR, "have provider");
 	
 	if (provider != NULL) {
 		provider->data = malloc(datalen);

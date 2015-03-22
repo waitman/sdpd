@@ -48,7 +48,7 @@ profile_p
 profile_get_descriptor(uint16_t uuid)
 {
 
-	syslog(LOG_ERR, "%d",uuid);
+	//syslog(LOG_ERR, "%d",uuid);
 	extern	profile_t	dun_profile_descriptor;
 	extern	profile_t	ftrn_profile_descriptor;
 	extern	profile_t	irmc_profile_descriptor;
@@ -80,7 +80,7 @@ profile_get_descriptor(uint16_t uuid)
 	for (i = 0; i < sizeof(profiles)/sizeof(profiles[0]); i++)
 	{
 		
-		syslog(LOG_ERR, "%d",profiles[i]->uuid);
+		//syslog(LOG_ERR, "%d",profiles[i]->uuid);
 
 		if (profiles[i]->uuid == uuid)
 			return (profiles[i]);
