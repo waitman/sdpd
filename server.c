@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
 #include "log.h"
 #include "profile.h"
 #include "provider.h"
@@ -436,30 +437,37 @@ server_process_request(server_p srv, int32_t fd)
 	    sizeof(*pdu) + (pdu->len = ntohs(pdu->len)) == len) {
 		switch (pdu->pid) {
 		case SDP_PDU_SERVICE_SEARCH_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_SEARCH_REQUEST");
 			error = server_prepare_service_search_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_ATTRIBUTE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_ATTRIBUTE_REQUEST");
 			error = server_prepare_service_attribute_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_SEARCH_ATTRIBUTE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_SEARCH_ATTRIBUTE_REQUEST");
 			error = server_prepare_service_search_attribute_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_REGISTER_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_REGISTER_REQUEST");
 			error = server_prepare_service_register_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_UNREGISTER_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_UNREGISTER_REQUEST");
 			error = server_prepare_service_unregister_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_CHANGE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_CHANGE_REQUEST");
 			error = server_prepare_service_change_response(srv, fd);
 			break;
 
 		default:
+			//syslog(LOG_ERR,"SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX");
 			error = SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX;
 			break;
 		}
@@ -469,30 +477,37 @@ server_process_request(server_p srv, int32_t fd)
 	if (error == 0) {
 		switch (pdu->pid) {
 		case SDP_PDU_SERVICE_SEARCH_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_SEARCH_REQUEST");
 			error = server_send_service_search_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_ATTRIBUTE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_ATTRIBUTE_REQUEST");
 			error = server_send_service_attribute_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_SEARCH_ATTRIBUTE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_SEARCH_ATTRIBUTE_REQUEST");
 			error = server_send_service_search_attribute_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_REGISTER_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_REGISTER_REQUEST");
 			error = server_send_service_register_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_UNREGISTER_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_UNREGISTER_REQUEST");
 			error = server_send_service_unregister_response(srv, fd);
 			break;
 
 		case SDP_PDU_SERVICE_CHANGE_REQUEST:
+			//syslog(LOG_ERR,"SDP_PDU_SERVICE_CHANGE_REQUEST");
 			error = server_send_service_change_response(srv, fd);
 			break;
 
 		default:
+			//syslog(LOG_ERR,"SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX");
 			error = SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX;
 			break;
 		}

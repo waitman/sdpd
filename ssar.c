@@ -37,6 +37,7 @@
 #include "provider.h"
 #include "server.h"
 #include "uuid-private.h"
+#include <syslog.h>
 
 /* from sar.c */
 int32_t server_prepare_attr_list(provider_p const provider,
@@ -81,14 +82,17 @@ server_prepare_service_search_attribute_response(server_p srv, int32_t fd)
 	SDP_GET8(type, req);
 	switch (type) {
 	case SDP_DATA_SEQ8:
+		//syslog(LOG_ERR,"SDP_DATA_SEQ8");
 		SDP_GET8(ssplen, req);
 		break;
 
 	case SDP_DATA_SEQ16:
+		//syslog(LOG_ERR,"SDP_DATA_SEQ16");
 		SDP_GET16(ssplen, req);
 		break;
 
 	case SDP_DATA_SEQ32:
+		//syslog(LOG_ERR,"SDP_DATA_SEQ32");
 		SDP_GET32(ssplen, req);
 		break;
 	}
@@ -176,6 +180,7 @@ server_prepare_service_search_attribute_response(server_p srv, int32_t fd)
 
 		switch (type) {
 		case SDP_DATA_UUID16:
+			//syslog(LOG_ERR,"SDP_DATA_UUID16 type");
 			if (ssplen < 2)
 				return (SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX);
 
@@ -207,6 +212,7 @@ server_prepare_service_search_attribute_response(server_p srv, int32_t fd)
 			break;
 
 		default:
+			//syslog(LOG_ERR,"SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX");
 			return (SDP_ERROR_CODE_INVALID_REQUEST_SYNTAX);
 			/* NOT REACHED */
 		}
@@ -214,19 +220,25 @@ server_prepare_service_search_attribute_response(server_p srv, int32_t fd)
 		for (provider = provider_get_first();
 		     provider != NULL;
 		     provider = provider_get_next(provider)) {
+			//syslog(LOG_ERR,"%d",provider->profile->uuid);
 			if (!provider_match_bdaddr(provider, &srv->req_sa.l2cap_bdaddr))
 				continue;
 
 			memcpy(&puuid, &uuid_base, sizeof(puuid));
 			puuid.b[2] = provider->profile->uuid >> 8;
 			puuid.b[3] = provider->profile->uuid;
+			//syslog(LOG_ERR,"p %d",provider->profile->uuid);
 
+			/*
+			 * This conditional is preventing response to services query.
+			 * 
 			if (memcmp(&uuid, &puuid, sizeof(uuid)) != 0 &&
 			    memcmp(&uuid, &uuid_public_browse_group, sizeof(uuid)) != 0)
 				continue;
-
+*/
 			cs = server_prepare_attr_list(provider,
 				aidptr, aidptr + aidlen, ptr, rsp_end);
+			//syslog(LOG_ERR,"cs %i",cs);
 			if (cs < 0)
 				return (SDP_ERROR_CODE_INSUFFICIENT_RESOURCES);
 
@@ -247,6 +259,7 @@ server_prepare_service_search_attribute_response(server_p srv, int32_t fd)
 	SDP_PUT8(SDP_DATA_SEQ16, ptr);
 	SDP_PUT16(srv->fdidx[fd].rsp_size - 3, ptr);
 
+	//syslog(LOG_ERR,"rsp size %d",srv->fdidx[fd].rsp_size - 3);
 	return (0);
 }
 

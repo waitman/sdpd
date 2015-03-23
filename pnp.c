@@ -139,6 +139,22 @@ pnp_profile_vendor_id_source(
     return (2);
 }
 
+/*
+ *           keyboard:
+              Address: 00-25-bc-fc-29-01
+              Type: Keyboard
+              Firmware Version: 0x50
+              Services: Apple Wireless Keyboard
+              Paired: Yes
+              Favorite: No
+              Connected: Yes
+              Manufacturer: Apple (0x3, 0x31c)
+              Vendor ID: 0x5ac
+              Product ID: 0x239
+              EDR Supported: No
+              eSCO Supported: No
+              */
+
 static int32_t
 pnp_profile_vendor_id(
 		uint8_t *buf, uint8_t const * const eob,
@@ -150,7 +166,7 @@ pnp_profile_vendor_id(
      */
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x004C, buf);
+    SDP_PUT16(0x05ac, buf);
     return (3);
 }
 
@@ -165,7 +181,7 @@ pnp_profile_product_id(
      */
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0xffff, buf);
+    SDP_PUT16(0x0239, buf);
     return (3);
 }
 
@@ -180,7 +196,7 @@ pnp_profile_product_version(
      */
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x0001, buf);
+    SDP_PUT16(0x0050, buf);
     return (3);
 }
 
