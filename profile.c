@@ -56,6 +56,7 @@ profile_get_descriptor(uint16_t uuid)
 	extern	profile_t	lan_profile_descriptor;
 	extern	profile_t	opush_profile_descriptor;
 	extern	profile_t	hid_profile_descriptor;
+	extern	profile_t	pnp_profile_descriptor;
 	extern	profile_t	sp_profile_descriptor;
 	extern	profile_t	nap_profile_descriptor;
 	extern	profile_t	gn_profile_descriptor;
@@ -69,6 +70,7 @@ profile_get_descriptor(uint16_t uuid)
 		&lan_profile_descriptor,
 		&opush_profile_descriptor,
 		&hid_profile_descriptor,
+		&pnp_profile_descriptor,
 		&sp_profile_descriptor,
 		&nap_profile_descriptor,
 		&gn_profile_descriptor,

@@ -35,10 +35,14 @@
 #include "profile.h"
 #include "provider.h"
 
-/* 
- * defines not found in sdp.h at the moment
- * 
- */
+
+#define	SDP_SERVICE_CLASS_PNP_DEVICE	0x1200
+#define SDP_ATTR_PNP_SPECIFICATION_ID	0x0200
+#define SDP_ATTR_PNP_VENDOR_ID		0x0201
+#define	SDP_ATTR_PNP_PRODUCT_ID		0x0202
+#define	SDP_ATTR_PNP_VERSION		0x0203
+#define SDP_ATTR_PNP_PRIMARY_RECORD	0x0204
+#define	SDP_ATTR_PNP_VENDOR_ID_SOURCE	0x0205
 
 #define SDP_DATA_BOOL8			0x28
 #define SDP_DATA_FALSE			0x0
@@ -64,6 +68,14 @@ struct sdp_hid_profile
 typedef struct sdp_hid_profile        sdp_hid_profile_t;
 typedef struct sdp_hid_profile *      sdp_hid_profile_p;
 
+struct sdp_pnp_profile
+{
+        uint8_t server_channel;
+        uint8_t supported_formats_size;
+        uint8_t supported_formats[30];
+};
+typedef struct sdp_pnp_profile        sdp_pnp_profile_t;
+typedef struct sdp_pnp_profile *      sdp_pnp_profile_p;
 
 
 static int32_t
@@ -73,6 +85,21 @@ hid_profile_create_service_class_id_list(
 {
 	static uint16_t	service_classes[] = {
 		SDP_SERVICE_CLASS_HUMAN_INTERFACE_DEVICE
+	};
+
+	return (common_profile_create_service_class_id_list(
+			buf, eob,
+			(uint8_t const *) service_classes,
+			sizeof(service_classes)));
+}
+
+static int32_t
+pnp_profile_create_service_class_id_list(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+	static uint16_t	service_classes[] = {
+		SDP_SERVICE_CLASS_PNP_DEVICE
 	};
 
 	return (common_profile_create_service_class_id_list(
@@ -97,6 +124,22 @@ hid_profile_create_bluetooth_profile_descriptor_list(
 			sizeof(profile_descriptor_list)));
 }
 
+static int32_t
+pnp_profile_create_bluetooth_profile_descriptor_list(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+	static uint16_t	profile_descriptor_list[] = {
+		SDP_SERVICE_CLASS_PNP_DEVICE,
+		0x0100
+	};
+
+	return (common_profile_create_bluetooth_profile_descriptor_list(
+			buf, eob,
+			(uint8_t const *) profile_descriptor_list,
+			sizeof(profile_descriptor_list)));
+}
+      
 static int32_t
 hid_profile_create_service_name(
 		uint8_t *buf, uint8_t const * const eob,
@@ -151,6 +194,38 @@ hid_profile_create_protocol_descriptor_list(
 
 	return (15);
 }
+
+static int32_t
+pnp_profile_create_protocol_descriptor_list(
+		uint8_t *buf, uint8_t const * const eob,
+		uint8_t const *data, uint32_t datalen)
+{
+	
+
+      /*
+       * Create a protocol descriptor list. 
+       * HID profile uses L2CAP with a control channel and interrupt channel. 
+       * Control channel is set by calling function. 
+       * Here we assume that interrupt channel is control channel + 2
+       * TODO: maybe set interrupt channel in calling function
+       */
+	
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(13, buf);
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(6, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
+	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
+	SDP_PUT8(SDP_DATA_UINT16, buf);		//3
+	SDP_PUT16(1, buf); 	/* PSM */
+	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
+	SDP_PUT8(3, buf);
+	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
+	SDP_PUT16(SDP_UUID_PROTOCOL_SDP, buf); 
+
+	return (15);
+}
+
 
 /*
  * seq8 len8				- 2 bytes
@@ -450,7 +525,7 @@ hid_langid(
   SDP_PUT16(0x0409, buf);
   SDP_PUT8(SDP_DATA_UINT16, buf);	//3
   SDP_PUT16(0x0100, buf);
-  return(12);
+  return(10);
 }
 
 /*
@@ -499,10 +574,13 @@ static attr_t	hid_profile_attrs[] = {
 	{ 0, NULL } /* end entry */
 };
 
+
 profile_t	hid_profile_descriptor = {
 	SDP_SERVICE_CLASS_HUMAN_INTERFACE_DEVICE,
 	sizeof(sdp_hid_profile_t),
 	hid_profile_data_valid,
 	(attr_t const * const) &hid_profile_attrs
 };
+
+
 
