@@ -34,3 +34,4 @@ sdpd:
 clean:
 	rm -f *.o
 	rm -f sdpd
+	rm -f sdpd.8.gz
