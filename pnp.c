@@ -98,14 +98,6 @@ pnp_profile_create_protocol_descriptor_list(
 {
 	
 
-      /*
-       * Create a protocol descriptor list. 
-       * HID profile uses L2CAP with a control channel and interrupt channel. 
-       * Control channel is set by calling function. 
-       * Here we assume that interrupt channel is control channel + 2
-       * TODO: maybe set interrupt channel in calling function
-       */
-	
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
 	SDP_PUT8(13, buf);
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
@@ -113,7 +105,7 @@ pnp_profile_create_protocol_descriptor_list(
 	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
 	SDP_PUT16(SDP_UUID_PROTOCOL_L2CAP, buf); 
 	SDP_PUT8(SDP_DATA_UINT16, buf);		//3
-	SDP_PUT16(1, buf); 	/* PSM */
+	SDP_PUT16(1, buf); 	/* PSM Channel 1 */
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2
 	SDP_PUT8(3, buf);
 	SDP_PUT8(SDP_DATA_UUID16, buf); 	//3
