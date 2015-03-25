@@ -123,14 +123,11 @@ hid_profile_create_protocol_descriptor_list(
 {
 	provider_p		provider = (provider_p) data;
 	sdp_hid_profile_p	hid = (sdp_hid_profile_p) provider->data;
-	
 
       /*
        * Create a protocol descriptor list. 
        * HID profile uses L2CAP with a control channel and interrupt channel. 
        * Control channel is set by calling function. 
-       * Here we assume that interrupt channel is control channel + 2
-       * TODO: maybe set interrupt channel in calling function
        */
 	
 	SDP_PUT8(SDP_DATA_SEQ8, buf); 		//2

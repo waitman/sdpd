@@ -48,17 +48,18 @@
 #define SDP_DATA_FALSE			0x0
 #define SDP_DATA_TRUE			0x1
 
-/* pnp info TEST */
+/* pnp info */
 
 struct sdp_pnp_profile
 {
-        uint8_t server_channel;
-        uint8_t supported_formats_size;
-        uint8_t supported_formats[30];
+	uint8_t		authority;		/* 0x1 or 0x2 */
+        uint16_t	vendor_id;
+        uint16_t	product_id;
+        uint16_t	product_version;
+	uint16_t	bt_version;
 };
 typedef struct sdp_pnp_profile        sdp_pnp_profile_t;
 typedef struct sdp_pnp_profile *      sdp_pnp_profile_p;
-
 
 static int32_t
 pnp_profile_create_service_class_id_list(
@@ -168,12 +169,15 @@ pnp_profile_product_id(
 		uint8_t const *data, uint32_t datalen)
 {
   
-    /* Identifies the product id, managed by mfg
-     * value here is for TESTING only - not for prodution use!!
+	provider_p		provider = (provider_p) data;
+	sdp_pnp_profile_p	pnp = (sdp_pnp_profile_p) provider->data;
+
+    /* 
+     * Identifies the product id, managed by mfg
      */
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x0239, buf);
+    SDP_PUT16(*(uint16_t const *)&pnp->product_id, buf);
     return (3);
 }
 
@@ -182,13 +186,15 @@ pnp_profile_product_version(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
-  
-    /* Identifies the product version, managed by mfg
-     * value here is for TESTING only - not for prodution use!!
-     */
+	provider_p		provider = (provider_p) data;
+	sdp_pnp_profile_p	pnp = (sdp_pnp_profile_p) provider->data;
+
+	/* 
+	* Identifies the product version, managed by mfg
+	*/
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x0050, buf);
+    SDP_PUT16(*(uint16_t const *)&pnp->product_version, buf);
     return (3);
 }
 
@@ -197,13 +203,15 @@ pnp_profile_specification_id(
 		uint8_t *buf, uint8_t const * const eob,
 		uint8_t const *data, uint32_t datalen)
 {
+	provider_p		provider = (provider_p) data;
+	sdp_pnp_profile_p	pnp = (sdp_pnp_profile_p) provider->data;
   
-    /* Identifies the Bluetooth specification version
-     * value here is for TESTING only - not for prodution use!!
+    /* 
+     * Identifies the Bluetooth specification version
      */
     
     SDP_PUT8(SDP_DATA_UINT16, buf);	//3
-    SDP_PUT16(0x0102, buf);
+    SDP_PUT16(*(uint16_t const *)&pnp->bt_version, buf);
     return (3);
 }
 
@@ -223,8 +231,6 @@ pnp_profile_primary_record(
 int32_t
 pnp_profile_data_valid(uint8_t const *data, uint32_t datalen)
 {
-	//sdp_hid_profile_p	hid = (sdp_hid_profile_p) data;
-	/* validate data here*/
 	/* TODO: validate the data, for now just return 'OK' */
 	return (1);
 }
